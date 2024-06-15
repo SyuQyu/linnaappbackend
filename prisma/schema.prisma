@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// prisma/schema.prisma
+
+// Define the role table
+model Role {
+  role_id    Int      @id @default(autoincrement())
+  role_name  String
+  desc       String?
+  User       User[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+// Define the Users table
+model User {
+  user_id       Int        @id @default(autoincrement())
+  role          Role       @relation(fields: [role_id], references: [role_id], onDelete: NoAction)
+  role_id       Int
+  office_id     Int?
+  office        Office?    @relation(fields: [office_id], references: [office_id], onDelete: NoAction)
+  full_name     String
+  email         String     @unique
+  password      String
+  phone_number  String?
+  department_id Int?
+  department    department? @relation(fields: [department_id], references: [department_id], onDelete: NoAction)
+  gender        String?
+  address       String?
+  absence_in    String?
+  absence_out   String?
+  leave_quota   Int        @default(10) // default leave quota is 10 per years
+  verified      Boolean    @default(false)
+  Absence       Absence[]
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+}
+
+model Office {
+  office_id   Int      @id @default(autoincrement())
+  office_name String
+  office_lang String
+  office_long String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  User        User[]
+}
+
+model department {
+  department_id   Int      @id @default(autoincrement())
+  department_name String
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  User            User[]
+}
+
+// Define the absence table
+model Absence {
+  absence_id            Int       @id @default(autoincrement())
+  user                  User      @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  user_id               Int
+  absence_check_in      DateTime?
+  absence_check_out     DateTime?
+  absence_type          String
+  absence_date          DateTime
+  absence_location_lang String
+  absence_location_long String
+  notes                 String?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+}
